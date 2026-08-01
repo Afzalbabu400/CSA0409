@@ -1,0 +1,113 @@
+1.
+a)linux/unix
+b)process scheduling
+  memory management
+c)pseudo code
+  1.Start
+  2.Call fork() to create a new process
+  3.If fork() < 0
+      Print "Error: Process creation failed"
+    Else if fork() == 0
+      Get child process ID using getpid()
+      Get parent process ID using getppid()
+      Print "Child Process: PID = child_pid, Parent PID = parent_pid"
+    Else
+      Get parent process ID using getpid()
+      Print "Parent Process: PID = parent_pid, Child PID = fork_return_value"
+  4.Stop
+
+2.
+a)To handle student records in a text file, the following system calls are used in Linux:
+     open() / creat() → Create or open a file.
+     write() → Write data into the file.
+     read() → Read data from the file.
+     close() → Close the file after operations.
+b)1.open() / creat()
+     Purpose: Establishes a connection between the program and the file
+  2.close()
+     Purpose: Terminates the connection between the program and the file
+c)pseudo code
+   Start
+   Call creat("students.txt") → returns file descriptor fd
+   If fd < 0
+       Print "Error creating file"
+   Else
+       Call write(fd, "Afzal\n")   // write student name into file
+       Print "Student name written successfully"
+   Call close(fd)   // close the file
+   Stop
+
+3.
+a)To copy contents from one file to another in Linux, the following system calls are used:
+
+open() → Open the source file (for reading) and destination file (for writing).
+
+read() → Read data from the source file.
+
+write() → Write data into the destination file.
+
+close() → Close both files after operations.
+b)1.read()
+    Purpose: Transfers data from the file (via its file descriptor) into a buffer in memory.
+  2.write()
+      Purpose: Transfers data from the buffer in memory into the file.
+c)Start
+  Open source file in READ mode → returns fd_source
+  Open destination file in WRITE mode (create if not exists) → returns fd_dest
+  If fd_source < 0 OR fd_dest < 0
+    Print "Error opening files"
+  Else
+    Repeat until end of source file:
+        Call read(fd_source, buffer, size)
+        If read_count > 0
+            Call write(fd_dest, buffer, read_count)
+        Else
+            Break loop
+      Print "File copied successfully"
+  Close fd_source
+  Close fd_dest
+  Stop
+
+4.
+a)fork() → creates a child process.
+  exec() → replaces child with a new program.
+b)
+  The parent process uses wait() to pause until the child finishes execution.
+  Prevents the child from becoming a zombie process (terminated but still occupying resources).
+  Ensures proper synchronization: parent continues only after child completes
+c)pid = fork()
+  if pid < 0:
+    print("Error: fork failed")
+  else if pid == 0:
+    exec("ls -l")   
+    print("Error: exec failed") 
+ else:
+    wait()    
+    print("Child completed execution")
+
+5.
+a)
+  Keeps data organized in files and folders.
+  Makes storing, reading, and updating easy.
+  Protects data with permissions and avoids loss.
+b)open() → Connects a file to the program, returns a file descriptor for operations.
+  close() → Ends the connection, saves changes, and frees resources.
+c)
+#include <stdio.h>
+#include <fcntl.h>   
+#include <unistd.h>  
+int main() {
+    int fd;
+    char buffer[100];
+    int count
+    fd = open("students.txt", O_RDONLY);
+    if (fd < 0) {
+        printf("Error opening file\n");
+        return 1;
+    }
+    count = read(fd, buffer, sizeof(buffer)-1);
+    buffer[count] = '\0';   // null terminate
+    printf("File contents: %s\n", buffer);
+    close(fd);
+    return 0;
+}
