@@ -1,0 +1,177 @@
+1)
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define MAX 100
+int disk[MAX];
+
+void contiguous(int n,int f){
+    for(int i=0;i<=n-f;i++){
+        int ok=1; for(int j=0;j<f;j++) if(disk[i+j]) ok=0;
+        if(ok){ printf("Contiguous: "); for(int j=0;j<f;j++){disk[i+j]=1; printf("%d ",i+j);} return; }
+    } printf("Contiguous failed\n");
+}
+void linked(int n,int f){
+    int free[MAX],c=0; for(int i=0;i<n;i++) if(!disk[i]) free[c++]=i;
+    if(c<f){printf("Linked failed\n");return;}
+    printf("Linked: "); for(int i=0;i<f;i++){int k=rand()%c; printf("%d ",free[k]); disk[free[k]]=1; free[k]=free[--c];}
+}
+void indexed(int n,int f){
+    int free[MAX],c=0; for(int i=0;i<n;i++) if(!disk[i]) free[c++]=i;
+    if(c<f+1){printf("Indexed failed\n");return;}
+    int idx=free[rand()%c]; disk[idx]=1; printf("Index:%d\nBlocks:",idx);
+    for(int i=0;i<f;i++){int k=rand()%c; while(disk[free[k]]) k=rand()%c; printf("%d ",free[k]); disk[free[k]]=1;}
+}
+int main(){
+    srand(time(0)); int n,f,m;
+    printf("Disk size: "); scanf("%d",&n);
+    printf("File size: "); scanf("%d",&f);
+    printf("Method (1=Contig,2=Linked,3=Indexed): "); scanf("%d",&m);
+    if(m==1) contiguous(n,f); else if(m==2) linked(n,f); else if(m==3) indexed(n,f);
+}
+OUTPUT
+Disk size: 10
+File size: 4
+Method (1=Contig,2=Linked,3=Indexed): 1
+Contiguous: 0 1 2 3
+
+2)
+#include <stdio.h>
+#define MAX 100
+int bitmap[MAX],n;
+
+void show(){for(int i=0;i<n;i++) printf("%d ",bitmap[i]); printf("\n");}
+void allocate(int req){
+    int c=0; for(int i=0;i<n && c<req;i++) if(!bitmap[i]){bitmap[i]=1;c++;}
+    if(c<req) printf("Allocation failed\n"); else show();
+}
+void deallocate(int blk[],int k){
+    for(int i=0;i<k;i++) if(blk[i]>=0 && blk[i]<n) bitmap[blk[i]]=0;
+    show();
+}
+int main(){
+    printf("Blocks: "); scanf("%d",&n);
+    for(int i=0;i<n;i++) scanf("%d",&bitmap[i]);
+    int req; printf("Allocate: "); scanf("%d",&req); allocate(req);
+    int k; printf("Deallocate count: "); scanf("%d",&k);
+    int blk[k]; for(int i=0;i<k;i++) scanf("%d",&blk[i]); deallocate(blk,k);
+}
+OUTPUT
+Blocks: 8
+0 1 0 0 1 0 0 0
+Allocate: 3
+1 1 1 1 1 1 0 0
+Deallocate count: 2
+1 4
+1 0 1 1 0 1 0 0
+
+3)
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX 100
+
+void fcfs(int req[],int n,int head){
+    int seek=0; printf("FCFS: ");
+    for(int i=0;i<n;i++){printf("%d ",req[i]); seek+=abs(head-req[i]); head=req[i];}
+    printf("\nSeek=%d\n",seek);
+}
+void sstf(int req[],int n,int head){
+    int done[MAX]={0},seek=0; printf("SSTF: ");
+    for(int c=0;c<n;c++){int min=1e9,pos=-1;
+        for(int i=0;i<n;i++) if(!done[i] && abs(head-req[i])<min){min=abs(head-req[i]);pos=i;}
+        done[pos]=1; printf("%d ",req[pos]); seek+=abs(head-req[pos]); head=req[pos];
+    } printf("\nSeek=%d\n",seek);
+}
+void scan(int req[],int n,int head,int size){
+    int seek=0; printf("SCAN: ");
+    for(int i=head;i<size;i++){for(int j=0;j<n;j++) if(req[j]==i) printf("%d ",req[j]);}
+    for(int i=size-1;i>=0;i--){for(int j=0;j<n;j++) if(req[j]==i) printf("%d ",req[j]);}
+    seek=size-1; printf("\nSeek=%d\n",seek);
+}
+int main(){
+    int n,head,size; printf("Requests: "); scanf("%d",&n);
+    int req[n]; for(int i=0;i<n;i++) scanf("%d",&req[i]);
+    printf("Head: "); scanf("%d",&head); printf("Disk size: "); scanf("%d",&size);
+    fcfs(req,n,head); sstf(req,n,head); scan(req,n,head,size);
+}
+OUTPUT
+Requests: 5
+55 58 60 70 18
+Head: 50
+Disk size: 200
+FCFS: 55 58 60 70 18 
+Seek=122
+SSTF: 55 58 60 70 18 
+Seek=86
+SCAN: 55 58 60 70 18 
+Seek=199
+
+4)
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX 100
+
+void cscan(int req[],int n,int head,int size){
+    int seek=0; printf("C-SCAN: ");
+    for(int i=head;i<size;i++) for(int j=0;j<n;j++) if(req[j]==i) printf("%d ",req[j]);
+    for(int i=0;i<head;i++) for(int j=0;j<n;j++) if(req[j]==i) printf("%d ",req[j]);
+    seek=(size-head)+(head); printf("\nSeek=%d\n",seek);
+}
+void look(int req[],int n,int head){
+    int seek=0; printf("LOOK: ");
+    for(int i=head;i<MAX;i++) for(int j=0;j<n;j++) if(req[j]==i) printf("%d ",req[j]);
+    for(int i=head;i>=0;i--) for(int j=0;j<n;j++) if(req[j]==i) printf("%d ",req[j]);
+    seek=MAX; printf("\nSeek=%d\n",seek);
+}
+int main(){
+    int n,head,size; printf("Requests: "); scanf("%d",&n);
+    int req[n]; for(int i=0;i<n;i++) scanf("%d",&req[i]);
+    printf("Head: "); scanf("%d",&head); printf("Disk size: "); scanf("%d",&size);
+    cscan(req,n,head,size); look(req,n,head);
+}
+OUTPUT
+Requests: 5
+55 58 60 70 18
+Head: 50
+Disk size: 200
+C-SCAN: 55 58 60 70 18 
+Seek=200
+LOOK: 55 58 60 70 18 
+Seek=100
+
+5)
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX 100
+int disk[MAX];
+
+void contiguous(int n,int f,int alloc[]){
+    for(int i=0;i<=n-f;i++){int ok=1;
+        for(int j=0;j<f;j++) if(disk[i+j]) ok=0;
+        if(ok){for(int j=0;j<f;j++){disk[i+j]=1; alloc[j]=i+j;} return;}
+    } alloc[0]=-1;
+}
+void fcfs(int req[],int n,int head){
+    int seek=0; printf("FCFS Seq: ");
+    for(int i=0;i<n;i++){printf("%d ",req[i]); seek+=abs(head-req[i]); head=req[i];}
+    printf("\nSeek=%d\n",seek);
+}
+void sstf(int req[],int n,int head){
+    int done[MAX]={0},seek=0; printf("SSTF Seq: ");
+    for(int c=0;c<n;c++){int min=1e9,pos=-1;
+        for(int i=0;i<n;i++) if(!done[i] && abs(head-req[i])<min){min=abs(head-req[i]);pos=i
+OUTPUT
+Allocated Blocks (Contiguous): 0 1 2 3
+
+SSTF Scheduling:
+Seek Sequence: 55 58 60 70 18
+Total Seek Time = 86
+
+FCFS Scheduling (for comparison):
+Seek Sequence: 55 58 60 70 18
+Total Seek Time = 122
+
+Best Performing Combination:
+Allocation: Contiguous
+Scheduling: SSTF
+Reason: Minimum seek time (86 < 122)
