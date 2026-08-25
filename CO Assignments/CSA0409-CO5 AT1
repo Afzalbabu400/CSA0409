@@ -1,0 +1,87 @@
+##  Q1: Optimized Linux File System Layout (10 Marks)
+**Solution:**
+- **Partitioning Strategy:**
+  - `/` (root): 10 GB → OS + core utilities.
+  - `/home`: 20 GB → user files.
+  - `/var/log`: 10 GB → dedicated partition for logs (prevents logs from filling root).
+  - `/var`: 8 GB → application data.
+  - Swap: 2 GB → fallback memory.
+- **Storage Management Tools:**
+  - **Log Rotation (`logrotate`)** → automatically compresses, rotates, and deletes old logs.
+  - **Quota Management** → restricts user disk usage.
+  - **Monitoring (`df`, `du`, `ncdu`)** → track usage proactively.
+- **Justification:**  
+  - Isolating `/var/log` ensures logs never exceed 10 GB.  
+  - Quotas prevent user files from exhausting space.  
+  - Log rotation + monitoring maintains stability and avoids service interruption.
+
+---
+
+##  Q2: Kernel-Level Optimization for Context Switching (10 Marks)
+**Solution:**
+- **Scheduler Tuning:**
+  - Use **real-time schedulers** (`SCHED_FIFO`, `SCHED_RR`) for critical tasks.
+  - Adjust **CPU affinity** (`taskset`) to bind processes to specific cores, reducing migration overhead.
+  - Increase **time quantum** to reduce frequent preemptions.
+- **Kernel Modules:**
+  - Load performance-enhancing modules (e.g., `perf`, `cgroups`) to prioritize workloads.
+  - Use **control groups (cgroups)** to isolate high-CPU tasks.
+- **Justification:**  
+  - Larger quantum reduces context switches.  
+  - CPU affinity minimizes cache misses.  
+  - Real-time scheduling ensures predictable latency without hardware upgrades.
+
+---
+
+##  Q3: Efficient Shell Script for 1M Log Entries (10 Marks)
+**Solution:**
+- **Optimized Commands:**
+  - Use `awk` or `grep` instead of `cat | grep` (avoid unnecessary pipes).
+  - Use `sort` + `uniq -c` for frequency analysis.
+  - Use `parallel` or `xargs -P` for multi-core processing.
+  - Example:
+    ```bash
+    awk '{print $5}' logs.txt | sort | uniq -c | sort -nr > result.txt
+    ```
+- **Performance Justification:**
+  - `awk` processes line-by-line efficiently.  
+  - Avoids subshell overhead.  
+  - Parallel execution ensures completion within 2 minutes.
+
+---
+
+##  Q4: Process Management for Faulty CPU-Hogging Process (10 Marks)
+**Solution:**
+- **Identification:**
+  - `top`, `htop`, `ps -eo pid,comm,%cpu --sort=-%cpu`
+- **Monitoring:**
+  - `pidstat -p <pid>` → track CPU usage.
+  - `strace -p <pid>` → debug system calls.
+- **Control:**
+  - `renice +10 <pid>` → lower priority.
+  - `cgroups` → limit CPU share.
+  - `kill -STOP <pid>` → pause without termination.
+- **Justification:**  
+  - Critical services remain unaffected.  
+  - Faulty process is throttled or paused safely.  
+  - No reboot required.
+
+---
+
+##  Q5: Resource Allocation for 5 VMs on 16 GB RAM (10 Marks)
+**Constraints:**
+- Host OS needs 4 GB → leaves 12 GB for VMs.
+- Each VM requires ≥ 2 GB → total 10 GB minimum.
+
+**Solution:**
+- Allocate **2 GB per VM** (total 10 GB).
+- Leave **2 GB buffer** for overhead + caching.
+- Use **KVM/VirtualBox with dynamic memory allocation (ballooning)** → allows VMs to borrow unused RAM.
+- Enable **swap space** on host for emergency.
+- Use **resource scheduling** (CPU pinning, memory reservation).
+
+**Justification:**  
+- Ensures all 5 VMs run smoothly.  
+- Ballooning + swap prevents crashes under peak load.  
+- Host stability maintained with reserved 4 GB.
+
