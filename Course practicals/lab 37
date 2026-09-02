@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <fcntl.h>   // for open()
+#include <unistd.h>  // for read(), write(), close()
+#include <stdlib.h>
+
+int main() {
+    int fd, choice;
+    char buffer[100], filename[20], newname[20];
+    char data[100];
+
+    while(1) {
+        printf("\n--- File Management Operations ---\n");
+        printf("1. Create & Write File\n2. Read File\n3. Delete File\n4. Rename File\n5. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1: // Create & Write
+                printf("Enter filename: ");
+                scanf("%s", filename);
+                fd = open(filename, O_CREAT | O_RDWR, 0666);
+                if(fd < 0) { perror("Error creating file"); break; }
+                printf("Enter data to write: ");
+                scanf(" %[^\n]", data); // read line with spaces
+                write(fd, data, sizeof(data));
+                close(fd);
+                printf("File created and data written.\n");
+                break;
+
+            case 2: // Read
+                printf("Enter filename: ");
+                scanf("%s", filename);
+                fd = open(filename, O_RDONLY);
+                if(fd < 0) { perror("Error opening file"); break; }
+                int n = read(fd, buffer, sizeof(buffer));
+                buffer[n] = '\0';
+                printf("File contents: %s\n", buffer);
+                close(fd);
+                break;
+
+            case 3: // Delete
+                printf("Enter filename to delete: ");
+                scanf("%s", filename);
+                if(remove(filename) == 0)
+                    printf("File deleted successfully.\n");
+                else
+                    perror("Error deleting file");
+                break;
+
+            case 4: // Rename
+                printf("Enter old filename: ");
+                scanf("%s", filename);
+                printf("Enter new filename: ");
+                scanf("%s", newname);
+                if(rename(filename, newname) == 0)
+                    printf("File renamed successfully.\n");
+                else
+                    perror("Error renaming file");
+                break;
+
+            case 5: // Exit
+                return 0;
+
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+}
