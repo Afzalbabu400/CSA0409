@@ -1,0 +1,44 @@
+#include <stdio.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+
+void printFilePermissions(struct stat fileStat) {
+    // File type
+    printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+
+    // Owner
+    printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+    printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+    printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+
+    // Group
+    printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+    printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+    printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+
+    // Others
+    printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+    printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+    printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+
+    printf("\n");
+}
+
+int main(int argc, char *argv[]) {
+    struct stat fileStat;
+
+    if(argc != 2) {
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    if(stat(argv[1], &fileStat) < 0) {
+        perror("Error retrieving file info");
+        return 1;
+    }
+
+    printf("File: %s\nPermissions: ", argv[1]);
+    printFilePermissions(fileStat);
+
+    return 0;
+}
