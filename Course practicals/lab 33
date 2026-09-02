@@ -1,0 +1,114 @@
+#include <stdio.h>
+#include <string.h>
+
+struct {
+    char fname[20];
+} files[10];   // max 10 files per user
+
+struct {
+    char uname[20];
+    int fcount;
+    struct {
+        char fname[20];
+    } ufiles[10];
+} users[10];   // max 10 users
+
+int main() {
+    int i, j, ch, ucount=0;
+    char uname[20], fname[20];
+
+    while(1) {
+        printf("\n--- Two Level Directory ---\n");
+        printf("1. Create User\n2. Create File\n3. Delete File\n4. Search File\n5. Display\n6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &ch);
+
+        switch(ch) {
+            case 1: // Create User
+                if(ucount >= 10) {
+                    printf("Max users reached!\n");
+                } else {
+                    printf("Enter user name: ");
+                    scanf("%s", users[ucount].uname);
+                    users[ucount].fcount = 0;
+                    ucount++;
+                }
+                break;
+
+            case 2: // Create File
+                printf("Enter user name: ");
+                scanf("%s", uname);
+                for(i=0;i<ucount;i++) {
+                    if(strcmp(users[i].uname, uname)==0) {
+                        if(users[i].fcount >= 10) {
+                            printf("User directory full!\n");
+                        } else {
+                            printf("Enter file name: ");
+                            scanf("%s", users[i].ufiles[users[i].fcount].fname);
+                            users[i].fcount++;
+                        }
+                        break;
+                    }
+                }
+                if(i==ucount) printf("User not found!\n");
+                break;
+
+            case 3: // Delete File
+                printf("Enter user name: ");
+                scanf("%s", uname);
+                printf("Enter file name to delete: ");
+                scanf("%s", fname);
+                for(i=0;i<ucount;i++) {
+                    if(strcmp(users[i].uname, uname)==0) {
+                        for(j=0;j<users[i].fcount;j++) {
+                            if(strcmp(users[i].ufiles[j].fname, fname)==0) {
+                                printf("File %s deleted.\n", fname);
+                                strcpy(users[i].ufiles[j].fname, users[i].ufiles[users[i].fcount-1].fname);
+                                users[i].fcount--;
+                                break;
+                            }
+                        }
+                        if(j==users[i].fcount) printf("File not found!\n");
+                        break;
+                    }
+                }
+                if(i==ucount) printf("User not found!\n");
+                break;
+
+            case 4: // Search File
+                printf("Enter user name: ");
+                scanf("%s", uname);
+                printf("Enter file name to search: ");
+                scanf("%s", fname);
+                for(i=0;i<ucount;i++) {
+                    if(strcmp(users[i].uname, uname)==0) {
+                        for(j=0;j<users[i].fcount;j++) {
+                            if(strcmp(users[i].ufiles[j].fname, fname)==0) {
+                                printf("File %s found under user %s.\n", fname, uname);
+                                break;
+                            }
+                        }
+                        if(j==users[i].fcount) printf("File not found!\n");
+                        break;
+                    }
+                }
+                if(i==ucount) printf("User not found!\n");
+                break;
+
+            case 5: // Display
+                for(i=0;i<ucount;i++) {
+                    printf("User: %s\n", users[i].uname);
+                    for(j=0;j<users[i].fcount;j++) {
+                        printf("   %s\n", users[i].ufiles[j].fname);
+                    }
+                }
+                break;
+
+            case 6: // Exit
+                return 0;
+
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+}
