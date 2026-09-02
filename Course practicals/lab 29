@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n, head, i, j, total = 0;
+    printf("Enter number of requests: ");
+    scanf("%d", &n);
+    int req[n];
+    printf("Enter request sequence: ");
+    for(i=0;i<n;i++) scanf("%d",&req[i]);
+    printf("Enter initial head position: ");
+    scanf("%d",&head);
+
+    // Sort requests
+    for(i=0;i<n-1;i++) {
+        for(j=i+1;j<n;j++) {
+            if(req[i] > req[j]) {
+                int temp=req[i]; req[i]=req[j]; req[j]=temp;
+            }
+        }
+    }
+
+    // Move right only (circular)
+    for(i=0;i<n;i++) {
+        if(req[i] >= head) break;
+    }
+    for(j=i;j<n;j++) {
+        total += abs(req[j]-head);
+        head=req[j];
+    }
+    total += abs(199-head); // go to end of disk
+    total += 199;           // jump back to start (circular)
+    head=0;
+    for(j=0;j<i;j++) {
+        total += abs(req[j]-head);
+        head=req[j];
+    }
+
+    printf("Total head movement = %d\n", total);
+    return 0;
+}
